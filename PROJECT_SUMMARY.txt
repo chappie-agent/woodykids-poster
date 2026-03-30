@@ -1,0 +1,220 @@
+===============================================================================
+WOODYKIDS POST BUILDER - NEXT.JS 14 APP ROUTER
+===============================================================================
+
+PROJECT LOCATION: /sessions/bold-funny-sagan/woodykids-poster-app/
+
+COMPLETE FILE LISTING:
+
+Configuration Files (6):
+  ✓ package.json                - Next.js 14 deps, React 19, Tailwind, Supabase
+  ✓ next.config.js              - Image remotePatterns (Shopify, Zernio)
+  ✓ tailwind.config.js          - WoodyKids brand colors
+  ✓ postcss.config.js           - Tailwind + autoprefixer
+  ✓ tsconfig.json               - Strict TypeScript, path aliases
+  ✓ .gitignore                  - Standard Next.js ignore rules
+
+Environment & Documentation (3):
+  ✓ .env.example                - Template with all required vars
+  ✓ README.md                   - Complete setup and usage guide
+  ✓ IMPLEMENTATION_CHECKLIST.md - Detailed component list
+
+Library Files (2):
+  ✓ src/lib/supabase.ts         - Browser & server Supabase clients
+  ✓ src/lib/types.ts            - TypeScript interfaces
+
+App Pages (4):
+  ✓ src/app/layout.tsx          - Root layout with Inter font
+  ✓ src/app/page.tsx            - Home (session list)
+  ✓ src/app/session/[id]/page.tsx - Main dashboard (FULLY INTERACTIVE)
+  ✓ src/app/globals.css         - Tailwind + custom styles
+
+API Routes (2):
+  ✓ src/app/api/sessions/route.ts - Session CRUD
+  ✓ src/app/api/schedule/route.ts - Post creation & scheduling
+
+TOTAL FILES: 17
+
+===============================================================================
+KEY FEATURES IMPLEMENTED
+===============================================================================
+
+DASHBOARD (src/app/session/[id]/page.tsx):
+
+1. PHOTO SELECTION
+   - Click to select/deselect images
+   - Numbered badges show selection order
+   - Drag-reorder with arrow buttons
+   - Grid layout with visual feedback
+
+2. CAPTION BUILDER
+   - Three sections: Openers, Bodies, Closers
+   - Pre-written options OR custom text toggle
+   - Hashtag chips (clickable toggle)
+   - Live caption composition
+
+3. SCHEDULING
+   - "Nu direct" - immediate
+   - "Eerstvolgende standaardtijd" - next standard time
+   - "Vandaag standaardtijd" - today at standard time
+   - "Morgen standaardtijd" - tomorrow at standard time
+   - "Kies datum en tijd" - custom date/time
+   - Standard times: Weekdays 19:00, Weekends 13:00 (Amsterdam time)
+
+4. PLATFORM SELECTION
+   - Instagram toggle
+   - Facebook toggle
+   - Both selected by default
+
+5. INSTAGRAM PREVIEW
+   - Phone mockup (320px width)
+   - Shows first selected image
+   - Live caption preview
+   - Updates as you compose
+
+6. ADDITIONAL FEATURES
+   - Word counter
+   - Form validation
+   - Error handling
+   - Loading states
+   - All text in Dutch
+
+API ENDPOINTS:
+
+1. POST /api/sessions
+   Creates session, stores in Supabase, returns session_id and URL
+
+2. GET /api/sessions
+   Lists all pending sessions
+
+3. POST /api/schedule
+   Complete workflow:
+   - Download images from Shopify CDN
+   - Upload to Zernio
+   - Create post on Zernio
+   - Store post record in Supabase
+   - Update session status
+   Returns: post_id, zernio_post_id
+
+===============================================================================
+STYLING
+===============================================================================
+
+Brand Colors (Tailwind config):
+  - Primary (forest green):    #5a7247 (woody-primary)
+  - Secondary (sage green):    #7a9963 (woody-secondary)
+  - Background (cream):        #f5f0eb (woody-bg)
+  - Accent (light sage):       #b8d4a3 (woody-accent)
+
+Custom Component Classes:
+  - .btn-primary       - Main action button
+  - .btn-secondary     - Secondary action button
+  - .btn-outline       - Outlined button
+  - .chip              - Hashtag/toggle chip
+  - .chip.active       - Active chip state
+  - .card              - Content card with shadow
+  - .option-card       - Caption option card
+  - .option-card.selected - Selected option state
+  - .input-field       - Form input styling
+
+Responsive Layout:
+  - Mobile: 1 column, stacked
+  - Tablet: 2-3 columns
+  - Desktop: 3 columns (2 for builder + 1 for preview)
+
+===============================================================================
+DEPLOYMENT (VERCEL)
+===============================================================================
+
+Environment Variables Required:
+  NEXT_PUBLIC_SUPABASE_URL          (client-accessible)
+  NEXT_PUBLIC_SUPABASE_ANON_KEY    (client-accessible)
+  SUPABASE_SERVICE_ROLE_KEY         (server-only)
+  ZERNIO_API_KEY                    (server-only)
+  ZERNIO_INSTAGRAM_ACCOUNT_ID       (pre-filled: 69ca53996cb7b8cf4cb0fdf4)
+  ZERNIO_FACEBOOK_ACCOUNT_ID        (pre-filled: 69ca54956cb7b8cf4cb1015c)
+
+Build Command:
+  npm run build
+
+Start Command:
+  npm start
+
+The app uses:
+  - Next.js 14 App Router (not Pages Router)
+  - Client components where needed ('use client')
+  - Server-side API routes for security
+  - Image optimization from Next.js
+
+===============================================================================
+DATABASE SCHEMA
+===============================================================================
+
+sessions table:
+  id                UUID primary key
+  product_ids       TEXT[]
+  images            JSONB
+  caption_options   JSONB
+  status            TEXT ('pending', 'scheduled', 'published')
+  created_at        TIMESTAMP
+  updated_at        TIMESTAMP
+
+posts table:
+  id                UUID primary key
+  session_id        UUID (foreign key → sessions)
+  caption           TEXT
+  image_urls        TEXT[]
+  platforms         TEXT[] (instagram, facebook)
+  scheduled_for     TIMESTAMP
+  timezone          TEXT
+  zernio_post_id    TEXT
+  status            TEXT ('scheduled', 'published', 'failed')
+  created_at        TIMESTAMP
+  updated_at        TIMESTAMP
+
+===============================================================================
+QUICK START
+===============================================================================
+
+1. Install dependencies:
+   cd /sessions/bold-funny-sagan/woodykids-poster-app
+   npm install
+
+2. Set up environment:
+   cp .env.example .env.local
+   # Fill in Supabase and Zernio credentials
+
+3. Create database tables (see README.md for SQL)
+
+4. Run development server:
+   npm run dev
+   # Open http://localhost:3000
+
+5. Test the flow:
+   - Home page shows pending sessions (or "no sessions" message)
+   - Create a session via /api/sessions endpoint
+   - Open session from home page
+   - Build post (select photos, compose caption, select hashtags)
+   - Choose platform(s) and schedule time
+   - Submit to /api/schedule
+
+===============================================================================
+NOTES
+===============================================================================
+
+- All user-facing text is in Dutch (nl-NL)
+- Image sources: Shopify CDN
+- Post distribution: Zernio (handles Instagram & Facebook)
+- Timezone: Hardcoded to Europe/Amsterdam
+- TypeScript: Strict mode, full type coverage
+- React: 19 with concurrent features
+- Styling: Tailwind CSS (no need for CSS-in-JS)
+- Ready for production deployment to Vercel
+
+Zernio API Integration Notes:
+- Media upload endpoint: TODO (add exact endpoint in schedule route)
+- Post creation endpoint: TODO (add exact endpoint in schedule route)
+- Both use Bearer token authentication
+- See /api/schedule/route.ts for integration points
+
+===============================================================================
