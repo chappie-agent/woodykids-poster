@@ -14,32 +14,37 @@ async function downloadImage(url: string): Promise<Buffer> {
   return Buffer.from(await response.arrayBuffer());
 }
 
-async function uploadToZernio(imageBuffer: Buffer, filename: string): Promise<string> {
-  const formData = new FormData();
-  const blob = new Blob([new Uint8Array(imageBuffer)], { type: 'image/jpeg' });
-  formData.append('files', blob, filename);
-
-  const response = await fetch(`${ZERNIO_BASE_URL}/v1/media`, {
-    method: 'POST',
+async function uploadToZernio(imageBuffer: Buffer): Promise<string> {
+  // Step 1: Get presigned upload URL
+  const uploadUrlResponse = await fetch(`${ZERNIO_BASE_URL}/v1/media/upload`, {
+    method: 'GET',
     headers: {
       Authorization: `Bearer ${process.env.ZERNIO_API_KEY}`,
     },
-    body: formData,
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Zernio upload failed (${response.status}): ${errorText}`);
+  if (!uploadUrlResponse.ok) {
+    const errorText = await uploadUrlResponse.text();
+    throw new Error(`Zernio presigned URL failed (${uploadUrlResponse.status}): ${errorText}`);
   }
 
-  const data = await response.json();
+  const { uploadUrl, publicUrl } = await uploadUrlResponse.json();
 
-  // Response format: { files: [{ type: 'image', url: '...', filename: '...', ... }] }
-  if (data.files && data.files.length > 0) {
-    return data.files[0].url;
+  // Step 2: PUT the image to the presigned URL
+  const putResponse = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'image/jpeg',
+    },
+    body: new Uint8Array(imageBuffer),
+  });
+
+  if (!putResponse.ok) {
+    const errorText = await putResponse.text();
+    throw new Error(`Image upload failed (${putResponse.status}): ${errorText}`);
   }
 
-  throw new Error('Zernio upload returned no files');
+  return publicUrl;
 }
 
 async function createZernioPost(
@@ -65,14 +70,14 @@ async function createZernioPost(
   const payload: Record<string, unknown> = {
     content: caption,
     platforms: platformsArray,
-    media_items: mediaItems,
+    mediaItems,
     timezone,
   };
 
   if (scheduledFor) {
-    payload.scheduled_for = scheduledFor;
+    payload.scheduledFor = scheduledFor;
   } else {
-    payload.publish_now = true;
+    payload.publishNow = true;
   }
 
   const response = await fetch(`${ZERNIO_BASE_URL}/v1/posts`, {
@@ -130,8 +135,7 @@ export async function POST(request: NextRequest) {
       const imageUrl = image_urls[i];
       try {
         const buffer = await downloadImage(imageUrl);
-        const filename = `woodykids-${Date.now()}-${i}.jpg`;
-        const zernioUrl = await uploadToZernio(buffer, filename);
+        const zernioUrl = await uploadToZernio(buffer);
         zernioMediaUrls.push(zernioUrl);
       } catch (err) {
         console.error(`Failed to process image ${i}:`, err);
