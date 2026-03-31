@@ -279,7 +279,7 @@ export default function SessionDashboard() {
             <section className="card">
               <h2 className="text-xl font-bold text-woody-primary mb-4">Foto's selecteren</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-                {state.session.images.map((image) => (
+                {(state.session.images || []).map((image) => (
                   <div
                     key={image.id}
                     onClick={() => toggleImageSelection(image.url)}
@@ -355,7 +355,7 @@ export default function SessionDashboard() {
                 <h3 className="font-semibold text-woody-primary mb-3">Opening</h3>
                 {!state.useCustomOpener ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                    {state.session.caption_options.openers.map((opener) => (
+                    {(state.session.caption_options?.openers || []).map((opener) => (
                       <div
                         key={opener}
                         onClick={() => setState((prev) => ({ ...prev, selectedOpener: opener }))}
@@ -395,7 +395,7 @@ export default function SessionDashboard() {
                 <h3 className="font-semibold text-woody-primary mb-3">Inhoud</h3>
                 {!state.useCustomBody ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                    {state.session.caption_options.bodies.map((body) => (
+                    {(state.session.caption_options?.bodies || []).map((body) => (
                       <div
                         key={body}
                         onClick={() => setState((prev) => ({ ...prev, selectedBody: body }))}
@@ -431,7 +431,7 @@ export default function SessionDashboard() {
                 <h3 className="font-semibold text-woody-primary mb-3">Afsluiting</h3>
                 {!state.useCustomCloser ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                    {state.session.caption_options.closers.map((closer) => (
+                    {(state.session.caption_options?.closers || []).map((closer) => (
                       <div
                         key={closer}
                         onClick={() => setState((prev) => ({ ...prev, selectedCloser: closer }))}
@@ -470,7 +470,7 @@ export default function SessionDashboard() {
               <div className="mb-6">
                 <h3 className="font-semibold text-woody-primary mb-3">Hashtags</h3>
                 <div className="flex flex-wrap gap-2">
-                  {state.session.caption_options.hashtags.map((hashtag) => (
+                  {(state.session.caption_options?.hashtags || []).map((hashtag) => (
                     <button
                       key={hashtag}
                       onClick={() => toggleHashtag(hashtag)}
