@@ -7,17 +7,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const {
-      product_ids,
-      images,
+      product_title,
+      product_handle,
+      product_price,
+      product_url,
+      product_data,
       caption_options,
+      images,
     } = body;
 
     const { data, error } = await supabaseServer
       .from('sessions')
       .insert({
-        product_ids,
-        images,
+        product_title,
+        product_handle,
+        product_price,
+        product_url,
+        product_data,
         caption_options,
+        images,
         status: 'pending',
       })
       .select()
