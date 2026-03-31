@@ -16,7 +16,7 @@ async function downloadImage(url: string): Promise<Buffer> {
 
 async function uploadToZernio(imageBuffer: Buffer, filename: string): Promise<string> {
   const formData = new FormData();
-  const blob = new Blob([imageBuffer], { type: 'image/jpeg' });
+  const blob = new Blob([new Uint8Array(imageBuffer)], { type: 'image/jpeg' });
   formData.append('files', blob, filename);
 
   const response = await fetch(`${ZERNIO_BASE_URL}/v1/media`, {
