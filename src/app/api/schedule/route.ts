@@ -16,10 +16,15 @@ async function downloadImage(url: string): Promise<Buffer> {
 
 async function uploadToZernio(imageBuffer: Buffer): Promise<string> {
   // Step 1: Get presigned upload URL
+  const apiKey = process.env.ZERNIO_API_KEY;
+  if (!apiKey) {
+    throw new Error('ZERNIO_API_KEY environment variable is not set');
+  }
+
   const uploadUrlResponse = await fetch(`${ZERNIO_BASE_URL}/v1/media/upload`, {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${process.env.ZERNIO_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
   });
 
