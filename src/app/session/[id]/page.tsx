@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { supabaseBrowser } from '@/lib/supabase';
 import { Session, CaptionOptions, ImageData } from '@/lib/types';
 
 interface DashboardState {
@@ -90,24 +89,20 @@ export default function SessionDashboard() {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const { data, error } = await supabaseBrowser
-          .from('sessions')
-          .select('*')
-          .eq('id', sessionId)
-          .single();
+        const response = await fetch(`/api/sessions/${sessionId}`);
+        const result = await response.json();
 
-        if (error) throw error;
+        if (!result.success) throw new Error(result.error);
 
-        if (data) {
-          setState((prev) => ({
-            ...prev,
-            session: data,
-            selectedOpener: data.caption_options.openers[0] || null,
-            selectedBody: data.caption_options.bodies[0] || null,
-            selectedCloser: data.caption_options.closers[0] || null,
-            loading: false,
-          }));
-        }
+        const data = result.session;
+        setState((prev) => ({
+          ...prev,
+          session: data,
+          selectedOpener: data.caption_options?.openers?.[0] || null,
+          selectedBody: data.caption_options?.bodies?.[0] || null,
+          selectedCloser: data.caption_options?.closers?.[0] || null,
+          loading: false,
+        }));
       } catch (err) {
         setState((prev) => ({
           ...prev,
