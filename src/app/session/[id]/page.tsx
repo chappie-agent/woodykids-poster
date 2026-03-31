@@ -28,6 +28,8 @@ interface DashboardState {
   customTime: string;
   submitting: boolean;
   submitError: string | null;
+  submitted: boolean;
+  submitMessage: string | null;
 }
 
 const TIMEZONE = 'Europe/Amsterdam';
@@ -84,6 +86,8 @@ export default function SessionDashboard() {
     customTime: '19:00',
     submitting: false,
     submitError: null,
+    submitted: false,
+    submitMessage: null,
   });
 
   useEffect(() => {
@@ -218,12 +222,18 @@ export default function SessionDashboard() {
         }),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Scheduling failed');
+        throw new Error(result.error || 'Scheduling failed');
       }
 
-      router.push('/');
+      setState((prev) => ({
+        ...prev,
+        submitting: false,
+        submitted: true,
+        submitMessage: result.message || 'Post is succesvol ingepland!',
+      }));
     } catch (err) {
       setState((prev) => ({
         ...prev,
@@ -245,6 +255,24 @@ export default function SessionDashboard() {
     return (
       <div className="min-h-screen bg-woody-bg flex items-center justify-center">
         <div className="text-red-600">{state.error || 'Sessie niet gevonden'}</div>
+      </div>
+    );
+  }
+
+  if (state.submitted) {
+    return (
+      <div className="min-h-screen bg-woody-bg flex items-center justify-center">
+        <div className="card text-center max-w-md mx-auto">
+          <div className="text-4xl mb-4">&#10003;</div>
+          <h2 className="text-2xl font-bold text-woody-primary mb-2">Post ingepland!</h2>
+          <p className="text-gray-600 mb-6">{state.submitMessage}</p>
+          <button
+            onClick={() => router.push('/')}
+            className="btn-primary"
+          >
+            Terug naar overzicht
+          </button>
+        </div>
       </div>
     );
   }
